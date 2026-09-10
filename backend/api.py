@@ -440,6 +440,14 @@ def cancel_ride(ride_id: int, user: sqlite3.Row = Depends(current_user)) -> dict
     return {"status": "cancelled"}
 
 
+@app.get("/rides/history")
+def ride_history(user: sqlite3.Row = Depends(current_user)) -> list[dict[str, Any]]:
+    db = connect()
+    rows = db.execute("SELECT id,pickup,destination,service,fare,status,created_at FROM rides WHERE rider_id=? ORDER BY created_at DESC LIMIT 20", (user["id"],)).fetchall()
+    db.close()
+    return [dict(row) for row in rows]
+
+
 @app.post("/rides/{ride_id}/complete")
 def complete_ride(ride_id: int, user: sqlite3.Row = Depends(current_user)) -> dict[str, str]:
     db = connect()
